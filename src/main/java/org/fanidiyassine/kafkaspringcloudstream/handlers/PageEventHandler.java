@@ -4,6 +4,7 @@ import org.apache.kafka.common.serialization.Serdes;
 import org.apache.kafka.streams.KeyValue;
 import org.apache.kafka.streams.kstream.Grouped;
 import org.apache.kafka.streams.kstream.KStream;
+import org.apache.kafka.streams.kstream.Materialized;
 import org.apache.kafka.streams.kstream.TimeWindows;
 import org.fanidiyassine.kafkaspringcloudstream.events.PageEvent;
 import org.springframework.context.annotation.Bean;
@@ -45,8 +46,8 @@ public class PageEventHandler {
             input.filter((k,v)->v.duration()>100)
                     .map((k,v)->new KeyValue<>(v.name(), v.duration()))
                     .groupByKey(Grouped.with(Serdes.String(), Serdes.Long()))
-                    .windowedBy(TimeWindows.ofSizeWithNoGrace(Duration.ofSeconds(5000)))
-                    .count()
+                    .windowedBy(TimeWindows.ofSizeWithNoGrace(Duration.ofSeconds(5)))
+                    .count(Materialized.as("count-store"))
                     .toStream()
                     .map((k,v)->new KeyValue<>(k.key(), v));
     }
